@@ -62,6 +62,41 @@ app.post("/api/kudos", function (req, res) {
         res.send(user);
     });
 });
+
+//-----------------
+let user = {
+    "company":"billennium",
+    "value":
+        [
+            "Zaufanie","Kreatywność","Rozwój","Energia","Profesjonalizm"],
+    "users":
+        [   
+            {"name":"Arkadiusz Brzostowski","email":"a.brzostowski@neonet.pl"},
+            {"name":"Adam Adam","email":"Adam.Adam@billennium.com"}
+        ]
+     }
+//-------------------
+app.post("/api/configuration", function (req, res) {
+       
+        if(!req.body) return res.sendStatus(400);
+           
+        const companyName = req.body.company;
+        const companyValue = req.body.value;
+        const usersList = req.body.users;
+    
+        const user = {
+                        company: companyName,
+                        valueCompany: companyValue,
+                        usersArray: usersList
+                     };
+        console.log(user)
+         
+        dbClient.insertOne(user, function(err, result){
+                   
+            if(err) return console.log(err);
+            res.send(user);
+        });
+    });
  
 // прослушиваем прерывание работы программы (ctrl-c)
 process.on("SIGINT", () => {
