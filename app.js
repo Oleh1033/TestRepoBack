@@ -18,7 +18,7 @@ mongoClient.connect(function(err, client){
     //dbClient = client;
     dbClientClose = client;
 
-    dbClient = client.db("usersdb").collection("users");
+    dbClient = client.db("KudosDB").collection("Billennium");
     app.listen(3000, function(){
         console.log("Сервер ожидает подключения...");
     });
@@ -26,7 +26,7 @@ mongoClient.connect(function(err, client){
 
 
  
-app.get("/api/users", function(req, res){
+app.get("/api/kudos", function(req, res){
         
    
         dbClient.find({}).toArray(function(err, users){
@@ -37,13 +37,23 @@ app.get("/api/users", function(req, res){
      
 });
 
-app.post("/api/users", function (req, res) {
+app.post("/api/kudos", function (req, res) {
        
     if(!req.body) return res.sendStatus(400);
        
-    const userName = req.body.name;
-    const userAge = req.body.age;
-    const user = {name: userName, age: userAge};
+    const kudosValue = req.body.value;
+    const kudosFrom = req.body.from;
+    const kudosTo = req.body.to;
+    const kudosDate = req.body.date;
+    const kudosMessage = req.body.message;
+
+    const user = {
+                    value: kudosValue,
+                    from: kudosFrom,
+                    to: kudosTo,
+                    date:kudosDate,
+                    message:kudosMessage
+                 };
     console.log(user)
      
     dbClient.insertOne(user, function(err, result){
