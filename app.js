@@ -1,56 +1,60 @@
-const Express = require("express");
-const BodyParser = require("body-parser");
+const express = require("express");
 const MongoClient = require("mongodb").MongoClient;
-const ObjectId = require("mongodb").ObjectID;
+// const objectId = require("mongodb").ObjectID;
+const bodyParser = require("body-parser");
+   
+const app = express();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
-const keys = require('./keys')
-const kudoRouter = require('./routes/kud')
+ 
+const mongoClient = new MongoClient("mongodb+srv://kud:kud@clusterkudos-m11u8.azure.mongodb.net/test?retryWrites=true", { useNewUrlParser: true });
+ 
+let dbClient;
+let dbClientClose;
+ 
+mongoClient.connect(function(err, client){
+    if(err) return console.log(err);
+    //dbClient = client;
+    dbClientClose = client;
 
-const CONNECTION_URL = "mongodb+srv://kudos:kudos@clusterkudos-m11u8.azure.mongodb.net/test?retryWrites=true";
-const DATABASE_NAME = "Kudos";
-
-var app = Express();
-app.use('/api/kudo', kudoRouter)
-
-//app.use(BodyParser.json());
-//app.use(BodyParser.urlencoded({ extended: true }));
-
-var database, collection;
-
-app.listen(3000, () => {
-    MongoClient.connect(CONNECTION_URL, { useNewUrlParser: true }, (error, client) => {
-        if(error) {
-            throw error;
-        }
-        database = client.db(DATABASE_NAME);
-        collection = database.collection("company");
-        console.log("Connected to `" + DATABASE_NAME + "`!");
-    });
+    dbClient = client.db("usersdb").collection("users");
+    app.listen(3000, function(){
+        console.log("Сервер ожидает подключения...");
+    });
 });
 
-app.get("/", (request, response) => {
-    collection.find({}).toArray((error, result) => {
-        if(error) {
-            return response.status(500).send(error);
-        }
-        response.send('result');
-    });
+
+ 
+app.get("/api/users", function(req, res){
+        
+   
+        dbClient.find({}).toArray(function(err, users){
+         
+        if(err) return console.log(err);
+        res.send(users)
+    });
+     
 });
 
-app.get("/kudos", (request, response) => {
-    collection.find({}).toArray((error, result) => {
-        if(error) {
-            return response.status(500).send(error);
-        }
-        response.send(result);
-    });
+app.post("/api/users", function (req, res) {
+       
+    if(!req.body) return res.sendStatus(400);
+       
+    const userName = req.body.name;
+    const userAge = req.body.age;
+    const user = {name: userName, age: userAge};
+    console.log(user)
+     
+    dbClient.insertOne(user, function(err, result){
+               
+        if(err) return console.log(err);
+        res.send(user);
+    });
 });
-
-app.post("/person", (request, response) => {
-    collection.insert(request.body, (error, result) => {
-        if(error) {
-            return response.status(500).send(error);
-        }
-        response.send(result.result);
-    });
+ 
+// прослушиваем прерывание работы программы (ctrl-c)
+process.on("SIGINT", () => {
+    dbClientClose.close();
+    process.exit();
 });
