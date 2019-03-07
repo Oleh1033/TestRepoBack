@@ -24,18 +24,33 @@ mongoClient.connect(function(err, client){
     });
 });
 
-
+// ------------ GET ALL KUDOS
  
 app.get("/api/kudos", function(req, res){
         
    
-        dbClient.find({}).toArray(function(err, users){
+        dbClient.find({segCompany: "billennium"}).toArray(function(err, kudos){
          
         if(err) return console.log(err);
-        res.send(users)
+        res.send(kudos)
     });
      
 });
+
+//____________________- Get All Users
+
+app.get("/api/users", function(req, res){
+        
+    dbClient.find({"company":"billennium"}).project({"_id":0,"usersArray":true}).toArray(function(err, list){
+    //dbClient.find({company: "billennium"}).toArray(function(err, list){
+         
+        if(err) return console.log(err);
+        res.send(list[0].usersArray)
+    });
+     
+});
+
+
 
 app.post("/api/kudos", function (req, res) {
        
@@ -46,13 +61,15 @@ app.post("/api/kudos", function (req, res) {
     const kudosTo = req.body.to;
     const kudosDate = req.body.date;
     const kudosMessage = req.body.message;
+    const kudosSegCompany = req.body.segCompany;
 
     const user = {
                     value: kudosValue,
                     from: kudosFrom,
                     to: kudosTo,
                     date:kudosDate,
-                    message:kudosMessage
+                    message:kudosMessage,
+                    segCompany:kudosSegCompany
                  };
     console.log(user)
      
@@ -82,9 +99,7 @@ app.post("/api/configuration/users", function (req, res) {
         if(!req.body) return res.sendStatus(400);
            
         const newUsers = req.body.users;
-        const user = {
-            usersArray : newUsers
-        }
+        const user =  newUsers
          
         dbClient.findOneAndUpdate({company:"billennium"},
             {$set: {usersArray: user}},
