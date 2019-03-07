@@ -75,6 +75,27 @@ let user = {
             {"name":"Adam Adam","email":"Adam.Adam@billennium.com"}
         ]
      }
+ 
+ //----------------    PUSH NEW USERS INTO LIST
+app.post("/api/configuration/users", function (req, res) {
+       
+        if(!req.body) return res.sendStatus(400);
+           
+        const newUsers = req.body.users;
+        const user = {
+            usersArray : newUsers
+        }
+         
+        dbClient.findOneAndUpdate({company:"billennium"},
+            {$set: {usersArray: user}},
+            function(err, result){
+                   
+                if(err) return console.log(err);
+                console.log(newUsers);
+                //res.send(user);
+        });
+});    
+
 //-------------------
 app.post("/api/configuration", function (req, res) {
        
@@ -96,8 +117,9 @@ app.post("/api/configuration", function (req, res) {
             if(err) return console.log(err);
             res.send(user);
         });
-    });
- 
+});
+
+    
 // прослушиваем прерывание работы программы (ctrl-c)
 process.on("SIGINT", () => {
     dbClientClose.close();
